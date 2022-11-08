@@ -11,4 +11,5 @@ For home buyers, knowing this information will be helpful when considering wheth
 These forecasts can also help current home owners prepare their homes to weather the storms and plan for emergencies.
 
 This app will attempts to shed some light on this question. It will allow users to select a particular US county, region, or state, 
-and get ML-generated predictions about various climate metrics of the selected area. 
+and get ML-generated predictions about future climate trends, storms, damage estimates, etc., all based on data from the 
+National Oceanic and Atmospheric Administration (NOAA).
