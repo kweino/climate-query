@@ -13,8 +13,8 @@ geocode_key = st.secrets.GEOCODE_API_KEY
 
 ### START OF PAGE ###
 with st.sidebar.form(key='geo_input_form'):
-    user_loc = st.text_input('Location:')
-    user_area = st.radio('Level of Analysis:',['State','County'])
+    user_loc = st.text_input('Location (County, State):')
+    # user_area = st.radio('Level of Analysis:',['State','County'])
     user_loc_button = st.form_submit_button('Get Climate Info')
 
 st.header('Climate Query')
@@ -24,12 +24,17 @@ if user_loc_button:
 
     geocoder = OpenCageGeocode(geocode_key)
     results = geocoder.geocode(user_loc)
+    try:
+        user_county = results[0]['components']['county']
+    except KeyError:
+        st.header('Invalid query. Please enter a valid US county and state.')
+        results = None
 
     if results:
 
         # st.write(results[0])
         user_county = results[0]['components']['county']
-        user_state = results[0]['components']['state_code']
+        user_state = results[0]['components']['state']
         user_county_fips = results[0]['annotations']['FIPS']['county']
         user_state_fips = results[0]['annotations']['FIPS']['state']
 
@@ -37,17 +42,18 @@ if user_loc_button:
 
         # USDM URL structure for Comprehensive Statistics:
         # https://usdmdataservices.unl.edu/api/[area]/[statistics type_1]?aoi=[aoi]&startdate=[start date]&enddate=[end date]&statisticsType=[statistics type_2]
-        if user_area == 'County':
-          area = 'CountyStatistics'
-          user_aoi = user_county_fips
-          st.write(f'Results for {user_county}, {user_state}')
 
-        elif user_area == 'State':
-          area = 'StateStatistics'
-          user_aoi = user_state_fips
-          st.write(f'Results for {user_state}')
-        else:
-            raise ValueError('Please enter "state" or "county"')
+        # if user_area == 'County':
+        area = 'CountyStatistics'
+        user_aoi = user_county_fips
+        st.write(f'Results for {user_county}, {user_state}')
+
+        # elif user_area == 'State':
+        #   area = 'StateStatistics'
+        #   user_aoi = user_state_fips
+        #   st.write(f'Results for {user_state}')
+        # else:
+        #     raise ValueError('Please enter "state" or "county"')
 
         stat_type_1 = 'GetDroughtSeverityStatisticsByAreaPercent'
         aoi = user_aoi
@@ -86,7 +92,9 @@ if user_loc_button:
 
         x= plot_df.MapDate
         y= plot_df.area_percent
-        fig = go.Figure()
+        layout = go.Layout(title=f'Drought history for {user_county}, {user_state} since 2000')
+
+        fig = go.Figure(layout=layout)
 
         fig.add_trace(go.Scatter( name='D4',
             x=x[plot_df.severity == 'D4'], y=y[plot_df.severity == 'D4'],
@@ -122,12 +130,13 @@ if user_loc_button:
         fig.add_trace(go.Scatter( name='No Drought',
             x=x[plot_df.severity == 'None'], y=y[plot_df.severity == 'None'],
             mode='lines',
-            line=dict(width=0.5, color='white'),
+            line=dict(width=0.5, color='#0E1116'),
             stackgroup='one'
         ))
 
         fig.update_layout(
             showlegend=True,
+            paper_bgcolor='#0E1116',
             yaxis=dict(
                 type='linear',
                 range=[1, 100],

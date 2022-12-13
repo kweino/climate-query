@@ -7,7 +7,7 @@ import pandas as pd
 from time import time
 from datetime import datetime
 
-def get_noaa_filenames():
+def main(): # Add Output params
     '''
     Grabs the current list of file names from the NOAA database &
     exports it to a CSV file
